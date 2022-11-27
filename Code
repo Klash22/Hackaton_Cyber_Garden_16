@@ -1,0 +1,71 @@
+const TelegramBot = require("node-telegram-bot-api")
+const token = '5887010599:AAHou35KQeQGtBzsnqr4aj_7rTElWknkgQw'
+const bot = new TelegramBot(token, { polling: true })
+
+let players = {}
+let game = false
+
+
+bot.onText(/Login/i, (msg, match) => {
+    if (game)
+        return bot.sendMessage(msg.chat.id, "Игра началась, состав участников менять нельзя")
+
+    players[msg.chat.id] = {
+        name: msg.chat.username,
+        id: msg.chat.id,
+        comment: match[1],
+        friend: null
+    }
+
+
+    bot.onText(/start[ -]game/i, (msg, match) => {
+        if (game)
+            return bot.sendMessage(msg.chat.id, "Игра уже запущена")
+
+        let pl = Object.values(players)
+
+        if (pl.length < 3 || pl.length > 130)
+            return bot.sendMessage(msg.chat.id, "участников:" + pl.length + ", а должно быть от 3 до 130")
+        game = true
+
+    })
+
+    console.log(players)
+    bot.sendMessage(msg.chat.id, "Принято")
+
+    if (Object.keys(players).length >= 3) {
+        let pl = Object.values(players)
+        pl.reduce((prev_player, current_player) => {
+
+            current_player.friend = {...prev_player }
+            bot.sendMessage(current_player.id,
+                "Теперь ты тайный санта для: @" + current_player.friend.name
+            )
+
+            return {...current_player }
+
+        }, pl[pl.length - 1])
+
+    }
+})
+
+bot.onText(/Leave/i, (msg, match) => {
+    if (game)
+        return bot.sendMessage(msg.chat.id, "Игра началась, состав участников менять нельзя")
+    delete players[msg.chat.id]
+    console.log(players)
+    bot.sendMessage(msg.chat.id, "Игра окончена")
+})
+
+
+bot.onText(/stop[ -]game/i, (msg, match) => {
+    game = false
+    players = {}
+})
+
+bot.onText(/start/i, (msg, match) => {
+    if (game)
+        return bot.sendMessage(msg.chat.id, "Вы уже начали")
+    else
+        return bot.sendMessage(msg.chat.id, "Привет я умею:\nLogin для начала работы со мной.\nLeave чтобы перестать участвовать.\nStop game чтобы остановить игру полностью")
+})
