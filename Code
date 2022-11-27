@@ -1,3 +1,4 @@
+C++
 const TelegramBot = require("node-telegram-bot-api")
 const token = '5887010599:AAHou35KQeQGtBzsnqr4aj_7rTElWknkgQw'
 const bot = new TelegramBot(token, { polling: true })
@@ -68,4 +69,8 @@ bot.onText(/start/i, (msg, match) => {
         return bot.sendMessage(msg.chat.id, "Вы уже начали")
     else
         return bot.sendMessage(msg.chat.id, "Привет я умею:\nLogin для начала работы со мной.\nLeave чтобы перестать участвовать.\nStop game чтобы остановить игру полностью")
+})
+
+bot.onText(/say my name/i, (msg, match) => {
+    bot.sendMessage(msg.chat.id, "Ваше имя: " + msg.chat.username)
 })
